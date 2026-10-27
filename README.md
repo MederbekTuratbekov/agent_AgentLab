@@ -100,14 +100,16 @@ RAG-агент на LangGraph с памятью, трассировкой и с�
 py -3 -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-copy .env.example .env # впиши OPENAI_API_KEY в .env.
+copy .env.example .env # впиши OPENAI_API_KEY в .env
+
 docker compose up -d
 pytest -q
-
 agentlab ingest
-agentlab search "who created javascript"
-agentlab ask "Who created Python? Answer using the documents."
+
+agentlab search "Кто создал Python?"
+agentlab ask "Кто создал PyTorch?"
 agentlab chat --session kg
+
 agentlab eval-retrieval
 agentlab eval-prompting --n 50
 agentlab eval-math --n 30
