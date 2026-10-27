@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import redis
 
-from src import settings
+from .. import settings
 
 PREFIX = "agentlab:facts:"
 

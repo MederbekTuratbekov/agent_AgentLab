@@ -3,7 +3,7 @@ import uuid
 from functools import partial
 from statistics import mean
 
-from src import settings
+from .. import settings
 from agentlab.agent.graph import ask, build_agent
 from agentlab.agent.tools import calculator
 from agentlab.data.hf_rows import load_gsm8k

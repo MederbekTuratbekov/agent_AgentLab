@@ -12,7 +12,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from typing_extensions import TypedDict
 
-from src import settings
+from .. import settings
 from agentlab.observability.tokens import trim_history
 from .memory import get_memory
 from .tools import TOOL_HINTS, TOOLS

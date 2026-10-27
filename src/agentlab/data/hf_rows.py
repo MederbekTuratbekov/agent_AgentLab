@@ -6,7 +6,7 @@ import time
 
 import requests
 
-from src import settings
+from .. import settings
 from ..utils import pmap
 
 ROWS_API = "https://datasets-server.huggingface.co/rows"

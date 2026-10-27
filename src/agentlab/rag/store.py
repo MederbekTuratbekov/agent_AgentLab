@@ -4,7 +4,7 @@ import psycopg2
 from pgvector.psycopg2 import register_vector
 from psycopg2.extras import execute_values
 
-from src import settings
+from .. import settings
 from ..llm import embed
 
 
