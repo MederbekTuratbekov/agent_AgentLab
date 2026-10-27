@@ -40,16 +40,32 @@ RAG-агент на LangGraph с памятью, трассировкой и с�
 
 ## Результаты
 
-Заполни после своего прогона. Не вписывай чужие цифры.
+Цифры получены в моём прогоне на `gpt-4o-mini`. Полные отчёты лежат в папке `reports\`.
 
 | Эксперимент | Вариант | Метрика | Значение | Стоимость |
 |---|---|---|---|---|
-| SQuAD, n=50 | base / few-shot / CoT | F1 | ... | $... |
+| SQuAD, n=50 | base, t=0.0 | EM / F1 | 0.86 / 0.916 | $0.0023 |
+| SQuAD, n=50 | base, t=0.7 | EM / F1 | 0.88 / 0.931 | $0.0024 |
+| SQuAD, n=50 | base, t=1.2 | EM / F1 | 0.86 / 0.912 | $0.0023 |
+| SQuAD, n=50 | few-shot, t=0.0 | EM / F1 | 0.90 / 0.930 | $0.0066 |
+| SQuAD, n=50 | CoT, t=0.0 | EM / F1 | 0.68 / 0.810 | $0.0041 |
 | GSM8K, n=30 | direct / cot / agent | accuracy | ... | $... |
-| Retrieval, 14 запросов | vector / bm25 / hybrid | hit@5, MRR | ... | — |
-| RAG e2e, 8 вопросов | агент + судья | correct | ... | $... |
-| Sampling 3x3 | conservative / balanced / creative | distinct-1 | ... | $... |
+| Retrieval, 14 запросов | vector | hit@5 / MRR | 1.0 / 0.857 | — |
+| Retrieval, 14 запросов | bm25 | hit@5 / MRR | 0.929 / 0.72 | — |
+| Retrieval, 14 запросов | hybrid | hit@5 / MRR | 1.0 / 0.911 | — |
+| RAG e2e, 8 вопросов | агент + судья | correct | 8 из 8 | $0.0015 |
+| Sampling 3x3 | conservative | distinct-1 | 0.549 | $0.0011 за весь запуск |
+| Sampling 3x3 | balanced | distinct-1 | 0.579 | |
+| Sampling 3x3 | creative | distinct-1 | 0.569 | |
 
+
+### Что видно в цифрах
+
+- Few-shot даёт лучший EM (0.90). Он тратит втрое больше входных токенов, чем base.
+- CoT показал худший EM (0.68), но `contains` у него 0.92. Гипотеза: ответы длинные, точное совпадение строк им не подходит. Я её ещё не проверил.
+- Три температуры отличаются на 1-2 пункта EM. При n=50 это шум.
+- Hybrid лучше vector по MRR (0.911 против 0.857). Запросов всего 14, поэтому разница ненадёжна.
+- Самое высокое distinct-1 у `balanced`, а не у `creative`. Это один запуск.
 ## Решения и компромиссы
 
 - **RRF вместо взвешенной суммы.** Оценки BM25 и косинусной близости имеют разные шкалы. RRF смотрит только на ранги.
@@ -81,10 +97,10 @@ RAG-агент на LangGraph с памятью, трассировкой и с�
 ## Команды
 
 ```powershell
-py -3.11 -m venv .venv
+py -3 -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-copy .env.example .env
+copy .env.example .env # впиши OPENAI_API_KEY в .env.
 docker compose up -d
 pytest -q
 
@@ -115,40 +131,39 @@ agentlab/
 │   ├── test_hybrid.py
 │   └── test_tokens.py
 └── src/agentlab/
-          │
-          ├── __init__.py     
-          ├── __main__.py
-          ├── cli.py
-          ├── settings.py
-          ├── utils.py
-          ├── llm.py
-          ├── multi_agent.py
-          │
-          ├── data/
-          │   ├── __init__.py 
-          │   ├── hf_rows.py
-          │   └── wiki.py
-          ├── rag/
-          │   ├── __init__.py 
-          │   ├── chunking.py
-          │   ├── store.py
-          │   └── hybrid.py
-          ├── agent/
-          │   ├── __init__.py
-          │   ├── calc.py
-          │   ├── memory.py
-          │   ├── tools.py
-          │   └── graph.py
-          │   ├── __init__.py 
-          │   ├── cost.py
-          │   ├── tokens.py
-          │   └── tracing.py
-          └── evals/
-              ├── __init__.py 
-              ├── metrics.py
-              ├── judge.py
-              ├── prompting.py
-              ├── math_eval.py
-              ├── retrieval.py
-              └── rag_e2e.py
+    ├── __init__.py
+    ├── __main__.py
+    ├── cli.py
+    ├── settings.py
+    ├── utils.py
+    ├── llm.py
+    ├── multi_agent.py
+    ├── data/
+    │   ├── __init__.py
+    │   ├── hf_rows.py
+    │   └── wiki.py
+    ├── rag/
+    │   ├── __init__.py
+    │   ├── chunking.py
+    │   ├── store.py
+    │   └── hybrid.py
+    ├── agent/
+    │   ├── __init__.py
+    │   ├── calc.py
+    │   ├── memory.py
+    │   ├── tools.py
+    │   └── graph.py
+    ├── observability/
+    │   ├── __init__.py
+    │   ├── cost.py
+    │   ├── tokens.py
+    │   └── tracing.py
+    └── evals/
+        ├── __init__.py
+        ├── metrics.py
+        ├── judge.py
+        ├── prompting.py
+        ├── math_eval.py
+        ├── retrieval.py
+        └── rag_e2e.py
 ```

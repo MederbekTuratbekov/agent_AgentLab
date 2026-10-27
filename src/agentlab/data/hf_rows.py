@@ -25,15 +25,22 @@ def _fetch_row(dataset: str, config: str, split: str, offset: int) -> dict:
         "dataset": dataset, "config": config, "split": split,
         "offset": offset, "length": 1,
     }
-    for attempt in range(4):
+    for attempt in range(6):
         try:
             r = requests.get(ROWS_API, params=params, timeout=30)
+            if r.status_code == 429:
+                retry_after = r.headers.get("Retry-After", "")
+                wait = int(retry_after) if retry_after.isdigit() else min(30, 3 * 2**attempt)
+                print(f"  [429] HuggingFace просит подождать. Жду {wait} сек.")
+                time.sleep(wait)
+                continue
             r.raise_for_status()
             return r.json()["rows"][0]["row"]
         except (requests.RequestException, KeyError, IndexError):
-            if attempt == 3:
+            if attempt == 5:
                 raise
             time.sleep(2**attempt)
+    raise RuntimeError("HuggingFace: слишком много ответов 429")
 
 
 def sample_rows(dataset: str, config: str, split: str, n: int, seed: int) -> list[dict]:
@@ -44,7 +51,7 @@ def sample_rows(dataset: str, config: str, split: str, n: int, seed: int) -> lis
 
     total = SPLIT_SIZES[(dataset, split)]
     offsets = random.Random(seed).sample(range(total), n)
-    rows = pmap(lambda off: _fetch_row(dataset, config, split, off), offsets, workers=4)
+    rows = pmap(lambda off: _fetch_row(dataset, config, split, off), offsets, workers=2)
 
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
