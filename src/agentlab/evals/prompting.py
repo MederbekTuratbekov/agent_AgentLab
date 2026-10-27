@@ -7,7 +7,7 @@ from pydantic import BaseModel, field_validator
 
 from agentlab.data.hf_rows import load_squad
 from ..llm import chat_json
-from agentlab.observability import price
+from ..observability.cost import price
 from ..utils import pmap, print_table, save_json
 from .. import settings
 from .metrics import contains, exact_match, f1

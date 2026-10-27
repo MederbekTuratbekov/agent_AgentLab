@@ -87,7 +87,11 @@ pip install -e ".[dev]"
 copy .env.example .env
 docker compose up -d
 pytest -q
+
 agentlab ingest
+agentlab search "who created javascript"
+agentlab ask "Who created Python? Answer using the documents."
+agentlab chat --session kg
 agentlab eval-retrieval
 agentlab eval-prompting --n 50
 agentlab eval-math --n 30

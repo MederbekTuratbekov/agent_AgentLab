@@ -8,7 +8,7 @@ from agentlab.agent.graph import ask, build_agent
 from agentlab.agent.tools import calculator
 from agentlab.data.hf_rows import load_gsm8k
 from ..llm import chat_json
-from agentlab.observability import price
+from ..observability.cost import price
 from agentlab.observability.tracing import TraceHandler
 from ..utils import pmap, print_table, save_json
 from .metrics import numbers_match
